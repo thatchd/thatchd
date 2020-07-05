@@ -1,0 +1,7 @@
+apiVersion: thatchd.io/v1alpha1
+kind: TestProgram
+metadata:
+  name: example-testprogram
+spec:
+  # Add fields here
+  size: 3
