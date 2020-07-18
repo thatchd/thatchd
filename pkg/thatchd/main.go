@@ -9,8 +9,7 @@ import (
 	"github.com/sergioifg94/thatchd/pkg/apis"
 	testcasecontroller "github.com/sergioifg94/thatchd/pkg/controller/testcase"
 	testprogramcontroller "github.com/sergioifg94/thatchd/pkg/controller/testprogram"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testcase"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testprogram"
+	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -22,7 +21,7 @@ var (
 	operatorMetricsPort int32 = 8686
 )
 
-func Run(stop <-chan struct{}, testCases map[string]testcase.Interface, programReconciler testprogram.Reconciler) error {
+func Run(stop <-chan struct{}, strategyProviders []strategy.StrategyProvider) error {
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
 		return errors.New("Failed to get watch namespace")
@@ -53,16 +52,13 @@ func Run(stop <-chan struct{}, testCases map[string]testcase.Interface, programR
 	if err := testprogramcontroller.Add(
 		mgr,
 		time.Second,
-		testCases,
-		programReconciler,
+		strategyProviders,
 	); err != nil {
 		return err
 	}
 
-	for testCaseName, testCase := range testCases {
-		if err := testcasecontroller.Add(mgr, testCaseName, testCase); err != nil {
-			return err
-		}
+	if err := testcasecontroller.Add(mgr, "", strategyProviders); err != nil {
+		return err
 	}
 
 	if err := mgr.Start(stop); err != nil {

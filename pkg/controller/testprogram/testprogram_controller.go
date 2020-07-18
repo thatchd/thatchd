@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-logr/logr"
 	thatchdv1alpha1 "github.com/sergioifg94/thatchd/pkg/apis/thatchd/v1alpha1"
+	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testcase"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testprogram"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -30,28 +31,26 @@ var log = logf.Log.WithName("controller_testprogram")
 
 // Add creates a new TestProgram Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, reconcilePeriod time.Duration, testCases map[string]testcase.Interface, programReconciler testprogram.Reconciler) error {
-	return add(mgr, newReconciler(mgr, reconcilePeriod, testCases, programReconciler))
+func Add(mgr manager.Manager, reconcilePeriod time.Duration, strategyProviders []strategy.StrategyProvider) error {
+	return add(mgr, newReconciler(mgr, reconcilePeriod, strategyProviders))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, reconcilePeriod time.Duration, testCases map[string]testcase.Interface, programReconciler testprogram.Reconciler) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, reconcilePeriod time.Duration, strategyProviders []strategy.StrategyProvider) reconcile.Reconciler {
 	return NewReconciler(
 		mgr.GetClient(),
 		mgr.GetScheme(),
 		reconcilePeriod,
-		testCases,
-		programReconciler,
+		strategyProviders,
 	)
 }
 
-func NewReconciler(client client.Client, scheme *runtime.Scheme, reconcilePeriod time.Duration, testCases map[string]testcase.Interface, programReconciler testprogram.Reconciler) reconcile.Reconciler {
+func NewReconciler(client client.Client, scheme *runtime.Scheme, reconcilePeriod time.Duration, strategyProviders []strategy.StrategyProvider) reconcile.Reconciler {
 	return &ReconcileTestProgram{
 		client:            client,
 		scheme:            scheme,
 		reconcilePeriod:   reconcilePeriod,
-		testCases:         testCases,
-		programReconciler: programReconciler,
+		strategyProviders: strategyProviders,
 	}
 }
 
@@ -84,8 +83,7 @@ type ReconcileTestProgram struct {
 
 	reconcilePeriod time.Duration
 
-	testCases         map[string]testcase.Interface
-	programReconciler testprogram.Reconciler
+	strategyProviders []strategy.StrategyProvider
 }
 
 // Reconcile reads that state of the cluster for a TestProgram object and makes changes based on the state read
@@ -122,8 +120,15 @@ func (r *ReconcileTestProgram) Reconcile(request reconcile.Request) (reconcile.R
 		currentState = "{}"
 	}
 
+	str := strategy.Strategy(instance.Spec.StateStrategy)
+
+	programReconciler, err := testprogram.FromStrategy(&str, r.strategyProviders)
+	if err != nil {
+		return reconcile.Result{}, fmt.Errorf("error obtaining program reconciler: %v", err)
+	}
+
 	// Reconcile the program state
-	updatedState, err := r.programReconciler.Reconcile(r.client, currentState)
+	updatedState, err := programReconciler.Reconcile(r.client, currentState)
 	if err != nil {
 		return reconcile.Result{}, fmt.Errorf("error reconciling program state: %v", err)
 	}
@@ -149,19 +154,21 @@ func (r *ReconcileTestProgram) Reconcile(request reconcile.Request) (reconcile.R
 }
 
 func (r *ReconcileTestProgram) dispatchTestCases(logger logr.Logger, namespace string, currentState interface{}) error {
-	for testCaseName, testCaseInterface := range r.testCases {
-		// Skip tests that aren't meant to be run yet
-		if !testCaseInterface.ShouldRun(currentState) {
-			continue
+	testCases := &thatchdv1alpha1.TestCaseList{}
+	if err := r.client.List(context.TODO(), testCases); err != nil {
+		return err
+	}
+
+	for _, testCase := range testCases.Items {
+		str := strategy.Strategy(testCase.Spec.Strategy)
+
+		testCaseInterface, err := testcase.FromStrategy(&str, r.strategyProviders)
+		if err != nil {
+			return err
 		}
 
-		// Get the TestCase CR
-		testCase := &thatchdv1alpha1.TestCase{}
-		if err := r.client.Get(context.TODO(), client.ObjectKey{
-			Namespace: namespace,
-			Name:      testCaseName,
-		}, testCase); err != nil {
-			logger.Info(fmt.Sprintf("TestCase %s not found. Skipping...", testCaseName))
+		// Skip tests that aren't meant to be run yet
+		if !testCaseInterface.ShouldRun(currentState) {
 			continue
 		}
 
@@ -173,8 +180,8 @@ func (r *ReconcileTestProgram) dispatchTestCases(logger logr.Logger, namespace s
 		// Dispatch by setting the DispatchedAt field to the current time
 		testCase.Status.DispatchedAt = thatchdv1alpha1.TimeString(time.Now())
 		testCase.Status.Status = thatchdv1alpha1.TestCaseDispatched
-		if err := r.client.Status().Update(context.TODO(), testCase); err != nil {
-			return fmt.Errorf("error dispatching TestCase %s", testCaseName)
+		if err := r.client.Status().Update(context.TODO(), &testCase); err != nil {
+			return fmt.Errorf("error dispatching TestCase %s", testCase.Name)
 		}
 	}
 

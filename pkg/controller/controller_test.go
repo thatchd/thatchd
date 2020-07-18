@@ -10,6 +10,7 @@ import (
 	thatchdv1alpha1 "github.com/sergioifg94/thatchd/pkg/apis/thatchd/v1alpha1"
 	testcasecontroller "github.com/sergioifg94/thatchd/pkg/controller/testcase"
 	testprogramcontroller "github.com/sergioifg94/thatchd/pkg/controller/testprogram"
+	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testcase"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testprogram"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,12 +22,11 @@ import (
 )
 
 type testScenario struct {
-	Name                  string
-	TestProgramReconciler testprogram.Reconciler
-	TestCases             map[string]testcase.Interface
-	TestCaseCRs           []*thatchdv1alpha1.TestCase
-	TestProgramCR         *thatchdv1alpha1.TestProgram
-	Assert                func(client client.Client, programReconcileResult reconcile.Result, programReconcileError error, testCaseResults map[string]*testCaseRun) error
+	Name              string
+	StrategyProviders []strategy.StrategyProvider
+	TestCaseCRs       []*thatchdv1alpha1.TestCase
+	TestProgramCR     *thatchdv1alpha1.TestProgram
+	Assert            func(client client.Client, programReconcileResult reconcile.Result, programReconcileError error, testCaseResults map[string]*testCaseRun) error
 }
 
 type testCaseRun struct {
@@ -54,6 +54,10 @@ var scenario1 testScenario = testScenario{
 		},
 		Spec: thatchdv1alpha1.TestProgramSpec{
 			InitialState: "{}",
+			StateStrategy: thatchdv1alpha1.Strategy{
+				Provider:      "testProgramStrategyProvider",
+				Configuration: map[string]string{},
+			},
 		},
 	},
 	TestCaseCRs: []*thatchdv1alpha1.TestCase{
@@ -62,11 +66,27 @@ var scenario1 testScenario = testScenario{
 				Name:      "test-case-A",
 				Namespace: "thatchd",
 			},
+			Spec: thatchdv1alpha1.TestCaseSpec{
+				Strategy: thatchdv1alpha1.Strategy{
+					Provider: "testCaseStrategyProvider",
+					Configuration: map[string]string{
+						"Name": "A",
+					},
+				},
+			},
 		},
 		{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "test-case-B",
 				Namespace: "thatchd",
+			},
+			Spec: thatchdv1alpha1.TestCaseSpec{
+				Strategy: thatchdv1alpha1.Strategy{
+					Provider: "testCaseStrategyProvider",
+					Configuration: map[string]string{
+						"Name": "B",
+					},
+				},
 			},
 		},
 		{
@@ -76,49 +96,19 @@ var scenario1 testScenario = testScenario{
 			},
 			Spec: thatchdv1alpha1.TestCaseSpec{
 				Timeout: addr("1s"),
+				Strategy: thatchdv1alpha1.Strategy{
+					Provider: "testCaseStrategyProvider",
+					Configuration: map[string]string{
+						"Name": "C",
+					},
+				},
 			},
-		},
-	},
-	TestProgramReconciler: &testProgramReconcilerMock{
-		reconcile: func(client client.Client, currentState string) (interface{}, error) {
-			return testProgramState{
-				ComponentA: componentStatus{
-					Ready:   true,
-					Healthy: false,
-				},
-				ComponentB: componentStatus{
-					Ready: false,
-				},
-			}, nil
 		},
 	},
 
-	TestCases: map[string]testcase.Interface{
-		"test-case-A": &testCaseInterfaceMock{
-			shouldRun: func(testContext interface{}) bool {
-				return testContext.(testProgramState).ComponentA.Ready
-			},
-			run: func(client client.Client) error {
-				return errors.New("This test failed")
-			},
-		},
-		"test-case-B": &testCaseInterfaceMock{
-			shouldRun: func(testContext interface{}) bool {
-				return testContext.(testProgramState).ComponentB.Ready
-			},
-			run: func(client client.Client) error {
-				return errors.New("This test failed")
-			},
-		},
-		"test-case-C": &testCaseInterfaceMock{
-			shouldRun: func(testContext interface{}) bool {
-				return true
-			},
-			run: func(client client.Client) error {
-				time.Sleep(time.Second * 5)
-				return nil
-			},
-		},
+	StrategyProviders: []strategy.StrategyProvider{
+		&testCaseStrategyProvider{},
+		&testProgramStrategyProvider{},
 	},
 
 	Assert: func(client client.Client, programReconcileResult reconcile.Result, programReconcileError error, testCaseResults map[string]*testCaseRun) error {
@@ -196,21 +186,19 @@ func TestThatchdControllers(t *testing.T) {
 				client,
 				scheme,
 				time.Minute,
-				scenario.TestCases,
-				scenario.TestProgramReconciler,
+				scenario.StrategyProviders,
+			)
+
+			testCaseController := testcasecontroller.NewReconciler(
+				client,
+				scheme,
+				scenario.StrategyProviders,
 			)
 
 			// Create test case run data
 			testCases := map[string]*testCaseRun{}
-			for testCaseName, testCaseInterface := range scenario.TestCases {
-				testCases[testCaseName] = &testCaseRun{
-					Reconciler: testcasecontroller.NewReconciler(
-						client,
-						scheme,
-						testCaseName,
-						testCaseInterface,
-					),
-				}
+			for _, testCase := range scenario.TestCaseCRs {
+				testCases[testCase.Name] = &testCaseRun{}
 			}
 
 			programReconcileResult, err := programcontroller.Reconcile(reconcile.Request{NamespacedName: types.NamespacedName{
@@ -220,7 +208,8 @@ func TestThatchdControllers(t *testing.T) {
 
 			for _, testCaseCR := range scenario.TestCaseCRs {
 				testCase := testCases[testCaseCR.Name]
-				result, err := testCase.Reconciler.Reconcile(reconcile.Request{NamespacedName: types.NamespacedName{
+
+				result, err := testCaseController.Reconcile(reconcile.Request{NamespacedName: types.NamespacedName{
 					Name:      testCaseCR.Name,
 					Namespace: testCaseCR.Namespace,
 				}})
@@ -268,6 +257,65 @@ func (m *testCaseInterfaceMock) ShouldRun(testContext interface{}) bool {
 
 func (m *testCaseInterfaceMock) Run(client client.Client) error {
 	return m.run(client)
+}
+
+type testProgramStrategyProvider struct{}
+
+var _ strategy.StrategyProvider = &testProgramStrategyProvider{}
+
+func (p *testProgramStrategyProvider) New(_ map[string]string) interface{} {
+	return &testProgramReconcilerMock{
+		reconcile: func(client client.Client, currentState string) (interface{}, error) {
+			return testProgramState{
+				ComponentA: componentStatus{
+					Ready:   true,
+					Healthy: false,
+				},
+				ComponentB: componentStatus{
+					Ready: false,
+				},
+			}, nil
+		},
+	}
+}
+
+type testCaseStrategyProvider struct{}
+
+var _ strategy.StrategyProvider = &testCaseStrategyProvider{}
+
+func (p *testCaseStrategyProvider) New(configuration map[string]string) interface{} {
+	switch configuration["Name"] {
+	case "A":
+		return &testCaseInterfaceMock{
+			shouldRun: func(testContext interface{}) bool {
+				return testContext.(testProgramState).ComponentA.Ready
+			},
+			run: func(client client.Client) error {
+				return errors.New("This test failed")
+			},
+		}
+	case "B":
+		return &testCaseInterfaceMock{
+			shouldRun: func(testContext interface{}) bool {
+				return testContext.(testProgramState).ComponentB.Ready
+			},
+			run: func(client client.Client) error {
+				return errors.New("This test failed")
+			},
+		}
+	case "C":
+		return &testCaseInterfaceMock{
+			shouldRun: func(testContext interface{}) bool {
+				return true
+			},
+			run: func(client client.Client) error {
+				time.Sleep(time.Second * 5)
+				return nil
+			},
+		}
+	}
+
+	return nil
 }
 
 func addr(v string) *string {

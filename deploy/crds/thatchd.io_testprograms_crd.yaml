@@ -37,6 +37,10 @@ spec:
                 modifying this file Add custom validation using kubebuilder tags:
                 https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
               type: string
+            stateStrategy:
+              $ref: '#/definitions/github.com~1sergioifg94~1thatchd~1pkg~1thatchd~1strategy~0Strategy'
+          required:
+          - stateStrategy
           type: object
         status:
           description: TestProgramStatus defines the observed state of TestProgram

@@ -12,7 +12,8 @@ type TestProgramSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	InitialState string `json:"initialContext,omitempty"`
+	InitialState  string   `json:"initialContext,omitempty"`
+	StateStrategy Strategy `json:"stateStrategy"`
 }
 
 // TestProgramStatus defines the observed state of TestProgram

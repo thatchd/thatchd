@@ -31,12 +31,16 @@ spec:
         spec:
           description: TestCaseSpec defines the desired state of TestCase
           properties:
+            strategy:
+              $ref: '#/definitions/github.com~1sergioifg94~1thatchd~1pkg~1thatchd~1strategy~0Strategy'
             timeout:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "operator-sdk generate k8s" to regenerate code after
                 modifying this file Add custom validation using kubebuilder tags:
                 https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
               type: string
+          required:
+          - strategy
           type: object
         status:
           description: TestCaseStatus defines the observed state of TestCase

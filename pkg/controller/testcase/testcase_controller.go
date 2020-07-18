@@ -6,6 +6,7 @@ import (
 	"time"
 
 	thatchdv1alpha1 "github.com/sergioifg94/thatchd/pkg/apis/thatchd/v1alpha1"
+	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testcase"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -28,26 +29,24 @@ var log = logf.Log.WithName("controller_testcase")
 
 // Add creates a new TestCase Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, name string, testCaseInterface testcase.Interface) error {
-	return add(mgr, newReconciler(mgr, name, testCaseInterface))
+func Add(mgr manager.Manager, name string, strategyProviders []strategy.StrategyProvider) error {
+	return add(mgr, newReconciler(mgr, strategyProviders))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, name string, testCaseInterface testcase.Interface) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, strategyProviders []strategy.StrategyProvider) reconcile.Reconciler {
 	return NewReconciler(
 		mgr.GetClient(),
 		mgr.GetScheme(),
-		name,
-		testCaseInterface,
+		strategyProviders,
 	)
 }
 
-func NewReconciler(client client.Client, scheme *runtime.Scheme, name string, testCaseInterface testcase.Interface) reconcile.Reconciler {
+func NewReconciler(client client.Client, scheme *runtime.Scheme, strategyProviders []strategy.StrategyProvider) reconcile.Reconciler {
 	return &ReconcileTestCase{
 		client:            client,
 		scheme:            scheme,
-		name:              name,
-		testCaseInterface: testCaseInterface,
+		strategyProviders: strategyProviders,
 	}
 }
 
@@ -88,8 +87,7 @@ type ReconcileTestCase struct {
 	client client.Client
 	scheme *runtime.Scheme
 
-	name              string
-	testCaseInterface testcase.Interface
+	strategyProviders []strategy.StrategyProvider
 }
 
 // Reconcile reads that state of the cluster for a TestCase object and makes changes based on the state read
@@ -100,11 +98,6 @@ type ReconcileTestCase struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileTestCase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	// Reconcile only resources of the given name
-	if request.Name != r.name {
-		return reconcile.Result{}, nil
-	}
-
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling TestCase")
 
@@ -150,10 +143,18 @@ func (r *ReconcileTestCase) Reconcile(request reconcile.Request) (reconcile.Resu
 		timeoutCh = make(<-chan time.Time)
 	}
 
+	str := strategy.Strategy(instance.Spec.Strategy)
+
+	// Create an instance of the strategy to run the test case
+	testCaseInterface, err := testcase.FromStrategy(&str, r.strategyProviders)
+	if err != nil {
+		return reconcile.Result{}, fmt.Errorf("error obtaining strategy for test case %s: %v", instance.Name, err)
+	}
+
 	// Run the test in a goroutine and create a channel that closes when it's done
 	done := make(chan error)
 	go func() {
-		err := r.testCaseInterface.Run(r.client)
+		err := testCaseInterface.Run(r.client)
 		done <- err
 	}()
 
