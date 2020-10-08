@@ -7,7 +7,7 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testcases
   verbs:
@@ -19,7 +19,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testcases/status
   verbs:
@@ -27,7 +27,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testsuites
   verbs:
@@ -39,7 +39,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testsuites/status
   verbs:

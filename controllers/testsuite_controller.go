@@ -42,8 +42,8 @@ type TestSuiteReconciler struct {
 	StrategyProviders []strategy.StrategyProvider
 }
 
-// +kubebuilder:rbac:groups=thatchd.io,resources=testsuites,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=thatchd.io,resources=testsuites/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=testing.thatchd.io,resources=testsuites,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=testing.thatchd.io,resources=testsuites/status,verbs=get;update;patch
 
 func (r *TestSuiteReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()

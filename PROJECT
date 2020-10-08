@@ -3,10 +3,10 @@ layout: go.kubebuilder.io/v2
 projectName: thatchd
 repo: github.com/sergioifg94/thatchd
 resources:
-- group: thatchd.io
+- group: testing
   kind: TestSuite
   version: v1alpha1
-- group: thatchd.io
+- group: testing
   kind: TestCase
   version: v1alpha1
 version: 3-alpha

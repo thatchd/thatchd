@@ -5,7 +5,7 @@ metadata:
   name: testcase-viewer-role
 rules:
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testcases
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testcases/status
   verbs:

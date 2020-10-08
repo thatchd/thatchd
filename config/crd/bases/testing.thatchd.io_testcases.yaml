@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: testcases.thatchd.io
+  name: testcases.testing.thatchd.io
 spec:
-  group: thatchd.io
+  group: testing.thatchd.io
   names:
     kind: TestCase
     listKind: TestCaseList

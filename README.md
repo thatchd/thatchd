@@ -40,7 +40,7 @@ failing the test case if they don't.
 Create the TestSuite CR with the `PodsSuiteProvider`
 
 ```yaml
-apiVersion: thatchd.io/v1alpha1
+apiVersion: testing.thatchd.io/v1alpha1
 kind: TestSuite
 metadata:
   name: test-pods
@@ -70,7 +70,7 @@ to the TestSuite state. Create a TestCase CR to verify that the `foo: bar` annot
 is set on the `test-success` Pod
 
 ```yaml
-apiVersion: thatchd.io/v1alpha1
+apiVersion: testing.thatchd.io/v1alpha1
 kind: TestCase
 metadata:
   name: testcase-success
@@ -112,7 +112,7 @@ setting the status to `Finished`
 Create another TestCase that will fail:
 
 ```yaml
-apiVersion: thatchd.io/v1alpha1
+apiVersion: testing.thatchd.io/v1alpha1
 kind: TestCase
 metadata:
   name: testcase-fail

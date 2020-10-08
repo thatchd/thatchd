@@ -5,7 +5,7 @@ metadata:
   name: testsuite-viewer-role
 rules:
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testsuites
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - thatchd.io
+  - testing.thatchd.io
   resources:
   - testsuites/status
   verbs:

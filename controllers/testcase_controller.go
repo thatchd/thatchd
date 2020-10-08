@@ -40,8 +40,8 @@ type TestCaseReconciler struct {
 	StrategyProviders []strategy.StrategyProvider
 }
 
-// +kubebuilder:rbac:groups=thatchd.io,resources=testcases,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=thatchd.io,resources=testcases/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=testing.thatchd.io,resources=testcases,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=testing.thatchd.io,resources=testcases/status,verbs=get;update;patch
 
 func (r *TestCaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()

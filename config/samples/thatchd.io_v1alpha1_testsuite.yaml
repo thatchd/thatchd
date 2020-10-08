@@ -1,4 +1,4 @@
-apiVersion: thatchd.io/v1alpha1
+apiVersion: testing.thatchd.io/v1alpha1
 kind: TestSuite
 metadata:
   name: testsuite-sample
