@@ -10,7 +10,7 @@ import (
 type Interface interface {
 	ShouldRun(state interface{}) bool
 
-	Run(client client.Client) error
+	Run(client client.Client, namespace string) error
 }
 
 func FromStrategy(s *strategy.Strategy, providers []strategy.StrategyProvider) (Interface, error) {

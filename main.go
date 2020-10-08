@@ -17,23 +17,20 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	thatchdv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
 	"github.com/sergioifg94/thatchd/controllers"
+	"github.com/sergioifg94/thatchd/example"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testsuite"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -73,7 +70,8 @@ func main() {
 	}
 
 	strategyProviders := []strategy.StrategyProvider{
-		&AnnotationsSuiteReconcilerProvider{},
+		&example.PodsSuiteProvider{},
+		&example.PodAnnotationProvider{},
 	}
 
 	if err = (&controllers.TestSuiteReconciler{
@@ -101,29 +99,4 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-}
-
-type AnnotationsSuiteReconciler struct{}
-
-type AnnotationsSuiteReconcilerProvider struct{}
-
-var _ testsuite.Reconciler = &AnnotationsSuiteReconciler{}
-var _ strategy.StrategyProvider = &AnnotationsSuiteReconcilerProvider{}
-
-func (r *AnnotationsSuiteReconciler) Reconcile(c client.Client, namespace, currentState string) (interface{}, error) {
-	ns := &v1.Namespace{}
-	if err := c.Get(context.TODO(), client.ObjectKey{Name: namespace}, ns); err != nil {
-		return nil, err
-	}
-
-	result := map[string]string{}
-	if ns.Annotations != nil {
-		result = ns.Annotations
-	}
-
-	return result, nil
-}
-
-func (p *AnnotationsSuiteReconcilerProvider) New(_ map[string]string) interface{} {
-	return &AnnotationsSuiteReconciler{}
 }

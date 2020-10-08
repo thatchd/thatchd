@@ -80,7 +80,7 @@ func (r *TestSuiteReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, fmt.Errorf("error reconciling program state: %v", err)
 	}
 
-	marshalledState, err := json.Marshal(updatedState)
+	marshalledState, err := json.MarshalIndent(updatedState, "", "  ")
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error marshalling state: %v", err)
 	}

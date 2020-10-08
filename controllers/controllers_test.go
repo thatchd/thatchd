@@ -263,7 +263,7 @@ func (m *testCaseInterfaceMock) ShouldRun(testContext interface{}) bool {
 	return m.shouldRun(testContext)
 }
 
-func (m *testCaseInterfaceMock) Run(client client.Client) error {
+func (m *testCaseInterfaceMock) Run(client client.Client, namespace string) error {
 	return m.run(client)
 }
 

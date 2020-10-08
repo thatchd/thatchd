@@ -100,7 +100,7 @@ func (r *TestCaseReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// Run the test in a goroutine and create a channel that closes when it's done
 	done := make(chan error)
 	go func() {
-		err := testCaseInterface.Run(r)
+		err := testCaseInterface.Run(r, req.Namespace)
 		done <- err
 	}()
 
