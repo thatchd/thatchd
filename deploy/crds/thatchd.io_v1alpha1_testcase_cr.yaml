@@ -1,7 +1,0 @@
-apiVersion: thatchd.io/v1alpha1
-kind: TestCase
-metadata:
-  name: example-testcase
-spec:
-  # Add fields here
-  size: 3

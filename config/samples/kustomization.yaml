@@ -1,0 +1,5 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- thatchd.io_v1alpha1_testsuite.yaml
+- thatchd.io_v1alpha1_testcase.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

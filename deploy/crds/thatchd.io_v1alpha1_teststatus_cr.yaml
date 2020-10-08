@@ -1,7 +1,0 @@
-apiVersion: thatchd.io/v1alpha1
-kind: TestStatus
-metadata:
-  name: example-teststatus
-spec:
-  # Add fields here
-  size: 3

@@ -1,0 +1,7 @@
+apiVersion: thatchd.io/v1alpha1
+kind: TestSuite
+metadata:
+  name: testsuite-sample
+spec:
+  # Add fields here
+  foo: bar

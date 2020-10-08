@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-// +k8s:deepcopy-gen
+// +kubebuilder:object:generate=true
 type Strategy struct {
 	Provider      string            `json:"provider"`
 	Configuration map[string]string `json:"configuration,omitempty"`
