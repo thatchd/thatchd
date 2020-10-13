@@ -1,0 +1,76 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
+  name: testworkers.testing.thatchd.io
+spec:
+  group: testing.thatchd.io
+  names:
+    kind: TestWorker
+    listKind: TestWorkerList
+    plural: testworkers
+    singular: testworker
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: TestWorker is the Schema for the testworkers API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: TestWorkerSpec defines the desired state of TestWorker
+          properties:
+            strategy:
+              properties:
+                configuration:
+                  additionalProperties:
+                    type: string
+                  type: object
+                provider:
+                  type: string
+              required:
+              - provider
+              type: object
+          required:
+          - strategy
+          type: object
+        status:
+          description: TestWorkerStatus defines the observed state of TestWorker
+          properties:
+            dispatchedAt:
+              type: string
+            failureMessage:
+              type: string
+            finishedAt:
+              type: string
+            startedAt:
+              type: string
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

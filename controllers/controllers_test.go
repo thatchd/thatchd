@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -243,13 +244,18 @@ func buildScheme(t *testing.T) *runtime.Scheme {
 }
 
 type testProgramReconcilerMock struct {
-	reconcile func(client.Client, string) (interface{}, error)
+	parseState func(string) (interface{}, error)
+	reconcile  func(client.Client, interface{}) (interface{}, error)
 }
 
 var _ testsuite.Reconciler = &testProgramReconcilerMock{}
 
-func (m *testProgramReconcilerMock) Reconcile(client client.Client, _, currentState string) (interface{}, error) {
+func (m *testProgramReconcilerMock) Reconcile(client client.Client, _ string, currentState interface{}) (interface{}, error) {
 	return m.reconcile(client, currentState)
+}
+
+func (m *testProgramReconcilerMock) ParseState(state string) (interface{}, error) {
+	return m.parseState(state)
 }
 
 type testCaseInterfaceMock struct {
@@ -273,7 +279,12 @@ var _ strategy.StrategyProvider = &testSuiteStrategyProvider{}
 
 func (p *testSuiteStrategyProvider) New(_ map[string]string) interface{} {
 	return &testProgramReconcilerMock{
-		reconcile: func(client client.Client, currentState string) (interface{}, error) {
+		parseState: func(s string) (interface{}, error) {
+			result := &testProgramState{}
+			err := json.Unmarshal([]byte(s), result)
+			return *result, err
+		},
+		reconcile: func(client client.Client, currentState interface{}) (interface{}, error) {
 			return testProgramState{
 				ComponentA: componentStatus{
 					Ready:   true,

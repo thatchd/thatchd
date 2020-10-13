@@ -24,7 +24,7 @@ func TestCompositeStructReconciler(t *testing.T) {
 	}
 
 	client := fake.NewFakeClient()
-	currentState := `
+	currentStateJSON := `
 	{
 		"foo": {
 			"A": "hello",
@@ -37,9 +37,14 @@ func TestCompositeStructReconciler(t *testing.T) {
 	}
 	`
 
+	currentState, err := compositeReconciler.ParseState(currentStateJSON)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	result, err := compositeReconciler.Reconcile(client, "", currentState)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	resultTyped, ok := result.(testStruct)
@@ -84,25 +89,31 @@ type BarReconciler struct{}
 var _ testsuite.Reconciler = &FooReconciler{}
 var _ testsuite.Reconciler = &BarReconciler{}
 
-func (r *FooReconciler) Reconcile(_ client.Client, _, currentStateJSON string) (interface{}, error) {
+func (r *FooReconciler) ParseState(state string) (interface{}, error) {
 	currentState := &foo{}
-	if err := json.Unmarshal([]byte(currentStateJSON), currentState); err != nil {
-		return nil, fmt.Errorf("Failed to unmarshall state %s: %w", currentStateJSON, err)
+	if err := json.Unmarshal([]byte(state), currentState); err != nil {
+		return nil, fmt.Errorf("Failed to unmarshall state %s: %w", state, err)
 	}
 
+	return currentState, nil
+}
+func (r *FooReconciler) Reconcile(_ client.Client, _ string, currentState interface{}) (interface{}, error) {
 	return &foo{
-		A: fmt.Sprintf("%s foo", currentState.A),
-		B: fmt.Sprintf("foo %s", currentState.B),
+		A: fmt.Sprintf("%s foo", currentState.(*foo).A),
+		B: fmt.Sprintf("foo %s", currentState.(*foo).B),
 	}, nil
 }
-func (r *BarReconciler) Reconcile(_ client.Client, _, currentStateJSON string) (interface{}, error) {
+func (r *BarReconciler) ParseState(state string) (interface{}, error) {
 	currentState := &bar{}
-	if err := json.Unmarshal([]byte(currentStateJSON), currentState); err != nil {
-		return nil, fmt.Errorf("Failed to unmarshall state %s: %w", currentStateJSON, err)
+	if err := json.Unmarshal([]byte(state), currentState); err != nil {
+		return nil, fmt.Errorf("Failed to unmarshall state %s: %w", state, err)
 	}
 
+	return currentState, nil
+}
+func (r *BarReconciler) Reconcile(_ client.Client, _ string, currentState interface{}) (interface{}, error) {
 	return &bar{
-		A: currentState.A + 1,
-		B: currentState.B + 1,
+		A: currentState.(*bar).A + 1,
+		B: currentState.(*bar).B + 1,
 	}, nil
 }

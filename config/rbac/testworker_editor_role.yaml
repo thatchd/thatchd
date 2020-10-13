@@ -1,0 +1,24 @@
+# permissions for end users to edit testworkers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: testworker-editor-role
+rules:
+- apiGroups:
+  - testing.thatchd.io
+  resources:
+  - testworkers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - testing.thatchd.io
+  resources:
+  - testworkers/status
+  verbs:
+  - get

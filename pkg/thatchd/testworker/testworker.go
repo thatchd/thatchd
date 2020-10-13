@@ -1,6 +1,7 @@
-package testcase
+package testworker
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sergioifg94/thatchd/pkg/thatchd/dispatch"
@@ -8,10 +9,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type MutateStateFn func(interface{}) (interface{}, error)
+
 type Interface interface {
 	dispatch.Dispatchable
 
-	Run(client client.Client, namespace string) error
+	Run(ctx context.Context, namespace string, client client.Client) (MutateStateFn, error)
 }
 
 func FromStrategy(s *strategy.Strategy, providers []strategy.StrategyProvider) (Interface, error) {
@@ -22,8 +25,14 @@ func FromStrategy(s *strategy.Strategy, providers []strategy.StrategyProvider) (
 
 	typedResult, ok := result.(Interface)
 	if !ok {
-		return nil, fmt.Errorf("provider for strategy %s doesn't return testcase interface", s)
+		return nil, fmt.Errorf("provider for strategy %s doesn't return testworker interface", s)
 	}
 
 	return typedResult, nil
+}
+
+// NoMutate is used when the test worker doesn't mutate the
+// test state
+func NoMutate(state interface{}) (interface{}, error) {
+	return state, nil
 }

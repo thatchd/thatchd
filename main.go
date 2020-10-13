@@ -27,6 +27,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	testingv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
 	thatchdv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
 	"github.com/sergioifg94/thatchd/controllers"
 	"github.com/sergioifg94/thatchd/example"
@@ -43,6 +44,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(thatchdv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(testingv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -72,6 +74,7 @@ func main() {
 	strategyProviders := []strategy.StrategyProvider{
 		&example.PodsSuiteProvider{},
 		&example.PodAnnotationProvider{},
+		&example.PodAnnotationWorkerProvider{},
 	}
 
 	if err = (&controllers.TestSuiteReconciler{
@@ -90,6 +93,15 @@ func main() {
 		StrategyProviders: strategyProviders,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TestCase")
+		os.Exit(1)
+	}
+	if err = (&controllers.TestWorkerReconciler{
+		Client:            mgr.GetClient(),
+		Log:               ctrl.Log.WithName("controllers").WithName("TestWorker"),
+		Scheme:            mgr.GetScheme(),
+		StrategyProviders: strategyProviders,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "TestWorker")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

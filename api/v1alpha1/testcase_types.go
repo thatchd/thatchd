@@ -87,6 +87,12 @@ func TimeString(t time.Time) *string {
 	return &result
 }
 
+var _ StrategyBacked = &TestCase{}
+
+func (tc *TestCase) GetStrategy() Strategy {
+	return tc.Spec.Strategy
+}
+
 func init() {
 	SchemeBuilder.Register(&TestCase{}, &TestCaseList{})
 }

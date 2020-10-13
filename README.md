@@ -65,7 +65,7 @@ status:
 
 #### TestCase
 
-The example test case will be dispatched when a specific pod is ready according
+The example test case will be dispatched when a specific pod is annotated according
 to the TestSuite state. Create a TestCase CR to verify that the `foo: bar` annotation
 is set on the `test-success` Pod
 
@@ -87,7 +87,29 @@ spec:
 
 The test case won't be dispatched yet as the Pod hasn't been created
 
-Create a Pod called `test-success` with the `foo: bar` annotation
+#### TestWorker
+
+The example test worker will be dispatched when a specific pod is ready, and will
+annotate the pod with the configured annotation. Create a TestWorker CR to annotate
+the `test-success` Pod with `foo: bar`
+
+```yaml
+apiVersion: testing.thatchd.io/v1alpha1
+kind: TestWorker
+metadata:
+  name: testworker-success
+spec:
+  strategy:
+    configuration:
+      annotation: foo
+      value: bar
+      podName: test-success
+    provider: PodAnnotationWorkerProvider
+```
+
+#### Test subject: `test-success` Pod
+
+Create the Pod called `test-success`
 
 ```yaml
 apiVersion: v1
@@ -96,8 +118,6 @@ metadata:
   name: test-success
   labels:
     app: hello-openshift
-  annotations:
-    foo: bar
 spec:
   containers:
     - name: hello-openshift
@@ -106,45 +126,7 @@ spec:
         - containerPort: 8080
 ```
 
-Once the Pod is ready, the TestCase will be dispatched, and quickly executed,
-setting the status to `Finished`
-
-Create another TestCase that will fail:
-
-```yaml
-apiVersion: testing.thatchd.io/v1alpha1
-kind: TestCase
-metadata:
-  name: testcase-fail
-spec:
-  strategy:
-    configuration:
-      expectedAnnotation: foo
-      expectedValue: baz
-      podName: test-fail
-    provider: PodAnnotationProvider
-```
-
-Create a Pod with no annotations
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: test-fail
-  labels:
-    app: hello-openshift
-spec:
-  containers:
-    - name: hello-openshift
-      image: openshift/hello-openshift
-      ports:
-        - containerPort: 8080
-```
-
-The TestCase will soon be dispatched, and the error message will be reflected
-in the status field, among other useful information:
-
-```yaml
-failureMessage: 'Annotation foo: baz not found in Pod'
-```
+Once the Pod is ready, the TestWoker will be dispatched, and quickly executed,
+annotating the Pod and setting the suite status. When the Pod status is set
+to annotated, the TestCase will be dispatched and executed, verifying the
+annotation and setting the status to `Finished`

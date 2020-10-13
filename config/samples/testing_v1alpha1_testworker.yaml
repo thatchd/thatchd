@@ -1,0 +1,7 @@
+apiVersion: testing.thatchd.io/v1alpha1
+kind: TestWorker
+metadata:
+  name: testworker-sample
+spec:
+  # Add fields here
+  foo: bar

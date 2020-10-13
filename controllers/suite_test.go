@@ -30,6 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	testingv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
 	thatchdv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
@@ -66,6 +67,9 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).NotTo(HaveOccurred())
 
 	err = thatchdv1alpha1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = testingv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	// +kubebuilder:scaffold:scheme

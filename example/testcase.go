@@ -23,11 +23,8 @@ var _ testcase.Interface = &PodAnnotationTestCase{}
 
 func (tc *PodAnnotationTestCase) ShouldRun(s interface{}) bool {
 	state := s.(PodSuiteState)
-	if ready, ok := state[tc.PodName]; ok && ready {
-		return true
-	}
-
-	return false
+	podState, ok := state[tc.PodName]
+	return ok && podState == PodAnnotated
 }
 
 func (tc *PodAnnotationTestCase) Run(c client.Client, namespace string) error {

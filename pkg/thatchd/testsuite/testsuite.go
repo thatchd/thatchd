@@ -8,7 +8,9 @@ import (
 )
 
 type Reconciler interface {
-	Reconcile(client client.Client, namespace, currentState string) (interface{}, error)
+	ParseState(state string) (interface{}, error)
+
+	Reconcile(client client.Client, namespace string, currentState interface{}) (interface{}, error)
 }
 
 func FromStrategy(s *strategy.Strategy, providers []strategy.StrategyProvider) (Reconciler, error) {

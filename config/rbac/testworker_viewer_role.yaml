@@ -1,0 +1,20 @@
+# permissions for end users to view testworkers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: testworker-viewer-role
+rules:
+- apiGroups:
+  - testing.thatchd.io
+  resources:
+  - testworkers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - testing.thatchd.io
+  resources:
+  - testworkers/status
+  verbs:
+  - get

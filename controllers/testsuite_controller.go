@@ -32,6 +32,7 @@ import (
 	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testcase"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testsuite"
+	"github.com/sergioifg94/thatchd/pkg/thatchd/testworker"
 )
 
 // TestSuiteReconciler reconciles a TestSuite object
@@ -74,8 +75,13 @@ func (r *TestSuiteReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return r.withErrorStatus(ctx, instance, fmt.Errorf("error obtaining program reconciler: %v", err))
 	}
 
+	parsedState, err := programReconciler.ParseState(currentState)
+	if err != nil {
+		return r.withErrorStatus(ctx, instance, fmt.Errorf("failed to parse current state: %w", err))
+	}
+
 	// Reconcile the program state
-	updatedState, err := programReconciler.Reconcile(r.Client, req.Namespace, currentState)
+	updatedState, err := programReconciler.Reconcile(r.Client, req.Namespace, parsedState)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error reconciling program state: %v", err)
 	}
@@ -92,6 +98,10 @@ func (r *TestSuiteReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	if err := r.dispatchTestCases(ctx, req.Namespace, updatedState); err != nil {
 		return ctrl.Result{}, fmt.Errorf("error dispatching test cases: %v", err)
+	}
+
+	if err := r.dispatchTestWorkers(ctx, req.Namespace, updatedState); err != nil {
+		return ctrl.Result{}, fmt.Errorf("error dispatching test workers: %w", err)
 	}
 
 	return ctrl.Result{
@@ -113,7 +123,7 @@ func (r *TestSuiteReconciler) dispatchTestCases(ctx context.Context, namespace s
 	}
 
 	for _, testCase := range testCases.Items {
-		str := strategy.Strategy(testCase.Spec.Strategy.Strategy)
+		str := testCase.Spec.Strategy.Strategy
 
 		testCaseInterface, err := testcase.FromStrategy(&str, r.StrategyProviders)
 		if err != nil {
@@ -135,6 +145,37 @@ func (r *TestSuiteReconciler) dispatchTestCases(ctx context.Context, namespace s
 		testCase.Status.Status = thatchdv1alpha1.TestCaseDispatched
 		if err := r.Status().Update(ctx, &testCase); err != nil {
 			return fmt.Errorf("error dispatching TestCase %s", testCase.Name)
+		}
+	}
+
+	return nil
+}
+
+func (r *TestSuiteReconciler) dispatchTestWorkers(ctx context.Context, namespace string, currentState interface{}) error {
+	testWorkers := &thatchdv1alpha1.TestWorkerList{}
+	if err := r.List(ctx, testWorkers); err != nil {
+		return err
+	}
+
+	for _, testWorker := range testWorkers.Items {
+		str := testWorker.GetStrategy().Strategy
+
+		testWorkerInterface, err := testworker.FromStrategy(&str, r.StrategyProviders)
+		if err != nil {
+			return err
+		}
+
+		if !testWorkerInterface.ShouldRun(currentState) {
+			continue
+		}
+
+		if testWorker.Status.DispatchedAt != nil {
+			continue
+		}
+
+		testWorker.Status.DispatchedAt = thatchdv1alpha1.TimeString(time.Now())
+		if err := r.Status().Update(ctx, &testWorker); err != nil {
+			return fmt.Errorf("error dispatching TestWorker %s: %v", testWorker.Name, err)
 		}
 	}
 

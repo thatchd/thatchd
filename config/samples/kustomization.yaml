@@ -2,4 +2,5 @@
 resources:
 - testing_v1alpha1_testsuite.yaml
 - testing_v1alpha1_testcase.yaml
+- testing_v1alpha1_testworker.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
