@@ -3,6 +3,30 @@
 Thatchd is a testing framework for Kubernetes where test cases are first class Kubernetes resources that are dispatched and executed by a controller based on the cluster state. It allows developers to leverage the Kubernetes controller pattern and Custom Resources by
 injecting their custom testing logic. 
 
+## Overview
+
+Thatchd is made of the following components, backed by Custom Resources
+
+### TestSuite
+
+The test suite is the central component of the test process. It reconciles a
+status object, that aggregates all the relevant information of the testing
+process. This object may be of any type, allowing the developer to use whatever
+information is necessary for the testing domain.
+
+### TestWorker
+
+The test worker supports the testing process by progressing tasks that may
+result in other test cases being dispatches. Test workers are dispatched based
+on a condition on the test suite state. When dispatched, the result of their
+execution results in a mutation of the testing state.
+
+### TestCase
+
+Like test workers, test cases are dispatched based on a condition on the test
+suite state, and are responsible of performing the testing logic. If the test
+fails, it's reflected in the TestCase CR
+
 ## Try it
 
 Thatchd is still under early development, but you can try it's functionallity
