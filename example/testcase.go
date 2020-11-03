@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testcase"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -48,11 +47,7 @@ func (tc *PodAnnotationTestCase) Run(c client.Client, namespace string) error {
 	return nil
 }
 
-type PodAnnotationProvider struct{}
-
-var _ strategy.StrategyProvider = &PodAnnotationProvider{}
-
-func (p *PodAnnotationProvider) New(config map[string]string) interface{} {
+func NewTestCase(config map[string]string) interface{} {
 	return &PodAnnotationTestCase{
 		PodName:            config["podName"],
 		ExpectedAnnotation: config["expectedAnnotation"],

@@ -13,7 +13,7 @@ type Reconciler interface {
 	Reconcile(client client.Client, namespace string, currentState interface{}) (interface{}, error)
 }
 
-func FromStrategy(s *strategy.Strategy, providers []strategy.StrategyProvider) (Reconciler, error) {
+func FromStrategy(s *strategy.Strategy, providers map[string]strategy.StrategyProvider) (Reconciler, error) {
 	result := strategy.FromStrategy(s, providers)
 	if result == nil {
 		return nil, fmt.Errorf("no provider found for strategy %s", s)

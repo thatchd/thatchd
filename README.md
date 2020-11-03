@@ -61,6 +61,10 @@ failing the test case if they don't.
 
 #### TestSuite
 
+> See the source code of the example TestSuite reconciler:
+>
+> 👓 [example/testsuite.go](example/testsuite.go)
+
 Create the TestSuite CR with the `PodsSuiteProvider`
 
 ```yaml
@@ -71,7 +75,7 @@ metadata:
 spec:
   initialState: '{}'
   stateStrategy:
-    provider: PodsSuiteProvider
+    provider: PodsSuite
 ```
 
 Once created, Thatchd will reconcile the status with a list of Pods in the namespace.
@@ -89,6 +93,10 @@ status:
 
 #### TestCase
 
+> See the source code of the example TestCase implementation:
+>
+> 👓 [example/testcase.go](example/testcase.go)
+
 The example test case will be dispatched when a specific pod is annotated according
 to the TestSuite state. Create a TestCase CR to verify that the `foo: bar` annotation
 is set on the `test-success` Pod
@@ -104,7 +112,7 @@ spec:
       expectedAnnotation: foo
       expectedValue: bar
       podName: test-success
-    provider: PodAnnotationProvider
+    provider: PodAnnotation
 ```
 
 > ℹ️ The `configuration` field in the CR allows to reuse logic in multiple test cases
@@ -112,6 +120,10 @@ spec:
 The test case won't be dispatched yet as the Pod hasn't been created
 
 #### TestWorker
+
+> See the source code of the example TestWorker implementation:
+>
+> 👓 [example/testworker.go](example/testworker.go)
 
 The example test worker will be dispatched when a specific pod is ready, and will
 annotate the pod with the configured annotation. Create a TestWorker CR to annotate
@@ -128,7 +140,7 @@ spec:
       annotation: foo
       value: bar
       podName: test-success
-    provider: PodAnnotationWorkerProvider
+    provider: PodAnnotationWorker
 ```
 
 #### Test subject: `test-success` Pod

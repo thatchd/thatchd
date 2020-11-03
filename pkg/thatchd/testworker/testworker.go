@@ -17,7 +17,7 @@ type Interface interface {
 	Run(ctx context.Context, namespace string, client client.Client) (MutateStateFn, error)
 }
 
-func FromStrategy(s *strategy.Strategy, providers []strategy.StrategyProvider) (Interface, error) {
+func FromStrategy(s *strategy.Strategy, providers map[string]strategy.StrategyProvider) (Interface, error) {
 	result := strategy.FromStrategy(s, providers)
 	if result == nil {
 		return nil, fmt.Errorf("no provider found for strategy %s", s)

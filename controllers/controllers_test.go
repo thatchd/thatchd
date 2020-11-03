@@ -23,7 +23,7 @@ import (
 
 type testScenario struct {
 	Name              string
-	StrategyProviders []strategy.StrategyProvider
+	StrategyProviders map[string]strategy.StrategyProvider
 	TestCaseCRs       []*thatchdv1alpha1.TestCase
 	TestSuiteCR       *thatchdv1alpha1.TestSuite
 	Assert            func(client client.Client, programReconcileResult reconcile.Result, programReconcileError error, testCaseResults map[string]*testCaseRun) error
@@ -114,9 +114,9 @@ var scenario1 testScenario = testScenario{
 		},
 	},
 
-	StrategyProviders: []strategy.StrategyProvider{
-		&testCaseStrategyProvider{},
-		&testSuiteStrategyProvider{},
+	StrategyProviders: map[string]strategy.StrategyProvider{
+		"testCaseStrategyProvider":  &testCaseStrategyProvider{},
+		"testSuiteStrategyProvider": &testSuiteStrategyProvider{},
 	},
 
 	Assert: func(client client.Client, programReconcileResult reconcile.Result, programReconcileError error, testCaseResults map[string]*testCaseRun) error {

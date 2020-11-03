@@ -3,7 +3,6 @@ package example
 import (
 	"context"
 
-	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
 	"github.com/sergioifg94/thatchd/pkg/thatchd/testworker"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -49,11 +48,7 @@ func (tw *PodAnnotationTestWorker) setPodAnnotated(i interface{}) (interface{}, 
 	return state, nil
 }
 
-type PodAnnotationWorkerProvider struct{}
-
-var _ strategy.StrategyProvider = &PodAnnotationWorkerProvider{}
-
-func (p *PodAnnotationWorkerProvider) New(config map[string]string) interface{} {
+func NewTestWorker(config map[string]string) interface{} {
 	return &PodAnnotationTestWorker{
 		PodName:    config["podName"],
 		Annotation: config["annotation"],

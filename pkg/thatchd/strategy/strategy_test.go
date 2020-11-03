@@ -10,9 +10,9 @@ var providerB StrategyProvider = &mockProviderB{}
 
 func TestNewTestCaseScheduleStrategy(t *testing.T) {
 
-	providers := []StrategyProvider{
-		&mockProviderA{},
-		&mockProviderB{},
+	providers := map[string]StrategyProvider{
+		"mockProviderA": &mockProviderA{},
+		"mockProviderB": &mockProviderB{},
 	}
 
 	strategyA := FromStrategy(&Strategy{

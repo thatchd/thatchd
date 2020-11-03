@@ -59,10 +59,6 @@ func (r *PodsSuiteReconciler) Reconcile(c client.Client, namespace string, s int
 	return currentState, nil
 }
 
-type PodsSuiteProvider struct{}
-
-var _ strategy.StrategyProvider = &PodsSuiteProvider{}
-
-func (p *PodsSuiteProvider) New(_ map[string]string) interface{} {
-	return &PodsSuiteReconciler{}
+func NewPodsSuiteProvider() strategy.StrategyProvider {
+	return strategy.NewProviderForType(&PodsSuiteReconciler{})
 }

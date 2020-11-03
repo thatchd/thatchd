@@ -71,10 +71,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	strategyProviders := []strategy.StrategyProvider{
-		&example.PodsSuiteProvider{},
-		&example.PodAnnotationProvider{},
-		&example.PodAnnotationWorkerProvider{},
+	strategyProviders := map[string]strategy.StrategyProvider{
+		"PodsSuite":           example.NewPodsSuiteProvider(),
+		"PodAnnotation":       strategy.NewProviderFunction(example.NewTestCase),
+		"PodAnnotationWorker": strategy.NewProviderFunction(example.NewTestWorker),
 	}
 
 	if err = (&controllers.TestSuiteReconciler{
