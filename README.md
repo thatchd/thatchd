@@ -41,7 +41,7 @@ with the example test suite that's included in the repo.
 
 Clone the repo and install resources in the cluster
 ```sh
-git clone https://github.com/sergioifg94/thatchd.git
+git clone https://github.com/thatchd/thatchd.git
 cd thatchd
 make install
 ```

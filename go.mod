@@ -1,4 +1,4 @@
-module github.com/sergioifg94/thatchd
+module github.com/thatchd/thatchd
 
 go 1.13
 

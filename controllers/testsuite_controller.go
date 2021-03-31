@@ -28,11 +28,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	thatchdv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testcase"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testsuite"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testworker"
+	thatchdv1alpha1 "github.com/thatchd/thatchd/api/v1alpha1"
+	"github.com/thatchd/thatchd/pkg/thatchd/strategy"
+	"github.com/thatchd/thatchd/pkg/thatchd/testcase"
+	"github.com/thatchd/thatchd/pkg/thatchd/testsuite"
+	"github.com/thatchd/thatchd/pkg/thatchd/testworker"
 )
 
 // TestSuiteReconciler reconciles a TestSuite object

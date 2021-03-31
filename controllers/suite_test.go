@@ -30,8 +30,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	testingv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
-	thatchdv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
+	testingv1alpha1 "github.com/thatchd/thatchd/api/v1alpha1"
+	thatchdv1alpha1 "github.com/thatchd/thatchd/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 

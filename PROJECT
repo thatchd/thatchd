@@ -1,7 +1,7 @@
 domain: thatchd.io
 layout: go.kubebuilder.io/v2
 projectName: thatchd
-repo: github.com/sergioifg94/thatchd
+repo: github.com/thatchd/thatchd
 resources:
 - group: testing
   kind: TestSuite

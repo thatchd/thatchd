@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testsuite"
+	"github.com/thatchd/thatchd/pkg/thatchd/testsuite"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )

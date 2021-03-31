@@ -3,8 +3,8 @@ package testcase
 import (
 	"fmt"
 
-	"github.com/sergioifg94/thatchd/pkg/thatchd/dispatch"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
+	"github.com/thatchd/thatchd/pkg/thatchd/dispatch"
+	"github.com/thatchd/thatchd/pkg/thatchd/strategy"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

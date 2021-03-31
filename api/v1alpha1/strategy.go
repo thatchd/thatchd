@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
+	"github.com/thatchd/thatchd/pkg/thatchd/strategy"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 

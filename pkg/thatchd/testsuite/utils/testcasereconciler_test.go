@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	thatchdv1alpha1 "github.com/sergioifg94/thatchd/api/v1alpha1"
+	thatchdv1alpha1 "github.com/thatchd/thatchd/api/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"

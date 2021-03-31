@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/sergioifg94/thatchd/pkg/thatchd/strategy"
-	"github.com/sergioifg94/thatchd/pkg/thatchd/testsuite"
+	"github.com/thatchd/thatchd/pkg/thatchd/strategy"
+	"github.com/thatchd/thatchd/pkg/thatchd/testsuite"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
